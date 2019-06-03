@@ -2,15 +2,15 @@ package org.web3j.spring.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import static org.web3j.spring.autoconfigure.Web3jProperties.WEB3J_PREFIX;
+import static org.web3j.spring.autoconfigure.QuorumProperties.QUORUM_PREFIX;
 
 /**
  * web3j property container.
  */
-@ConfigurationProperties(prefix = WEB3J_PREFIX)
-public class Web3jProperties {
+@ConfigurationProperties(prefix = QUORUM_PREFIX)
+public class QuorumProperties {
 
-    public static final String WEB3J_PREFIX = "web3j";
+    public static final String QUORUM_PREFIX = "quorum";
 
     private String clientAddress;
 
@@ -19,6 +19,8 @@ public class Web3jProperties {
     private String networkId;
 
     private Long httpTimeoutSeconds;
+
+    private Long pollingInterval;
 
     public String getClientAddress() {
         return clientAddress;
@@ -51,5 +53,12 @@ public class Web3jProperties {
     public void setHttpTimeoutSeconds(Long httpTimeoutSeconds) {
         this.httpTimeoutSeconds = httpTimeoutSeconds;
     }
-    
+
+    public Long getPollingInterval() {
+        return pollingInterval;
+    }
+
+    public void setPollingInterval(Long pollingInterval) {
+        this.pollingInterval = pollingInterval;
+    }
 }

@@ -29,8 +29,9 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 ext {
-    web3jVersion = '4.0.3'
-    springBootVersion = '2.0.6.RELEASE'
+    web3jVersion = '4.0.4'
+    quorumVersion = '4.0.6'
+    springBootVersion = '2.1.2.RELEASE'
 
     ossrhUsername = project.hasProperty('ossrhUsername') ? project.property('ossrhUsername') : System.getenv('OSSRH_USERNAME')
     ossrhPassword = project.hasProperty('ossrhPassword') ? project.property('ossrhPassword') : System.getenv('OSSRH_PASSWORD')
@@ -51,7 +52,9 @@ dependencies {
             "org.springframework.boot:spring-boot-actuator:$springBootVersion",
             "org.springframework.boot:spring-boot-actuator-autoconfigure:$springBootVersion",
             "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion",
-            "org.web3j:core:$web3jVersion"
+            "org.web3j:core:$web3jVersion",
+            "org.web3j:quorum:$quorumVersion"
+
 
     compile("org.springframework.boot:spring-boot-starter:$springBootVersion") {
         exclude module: 'commons-logging'

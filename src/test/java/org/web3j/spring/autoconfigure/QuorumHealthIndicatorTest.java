@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.*;
+import org.web3j.quorum.Quorum;
 import org.web3j.spring.autoconfigure.context.SpringApplicationTest;
 import org.web3j.utils.Numeric;
 
@@ -22,19 +23,19 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringApplicationTest.class)
-public class Web3jHealthIndicatorTest {
+public class QuorumHealthIndicatorTest {
 
 
     @Autowired
-    HealthIndicator web3jHealthIndicator;
+    HealthIndicator quorumHealthIndicator;
 
     @Autowired
-    Web3j web3j;
+    Quorum quorum;
 
     @Test
     public void testHealthCheckIndicatorDown() throws Exception {
         mockWeb3jCalls(false, null, null, null, null, null);
-        Health health = web3jHealthIndicator.health();
+        Health health = quorumHealthIndicator.health();
         assertThat(health.getStatus(), equalTo(Status.DOWN));
 
     }
@@ -47,7 +48,7 @@ public class Web3jHealthIndicatorTest {
                 new BigInteger("120"), "protocolVersion", new BigInteger("80"));
 
 
-        Health health = web3jHealthIndicator.health();
+        Health health = quorumHealthIndicator.health();
         assertThat(health.getStatus(), equalTo(Status.UP));
         assertThat(health.getDetails().get("netVersion"), equalTo("23"));
         assertThat(health.getDetails().get("clientVersion"), equalTo("ClientVersion"));
@@ -60,37 +61,37 @@ public class Web3jHealthIndicatorTest {
     private void mockWeb3jCalls(boolean isListening, String netVersion, String clientVersion,
                                 BigInteger blockNumber, String protocolVersion, BigInteger netPeer) throws Exception {
 
-        Mockito.when(web3j.netListening().send().isListening()).thenReturn(isListening);
+        Mockito.when(quorum.netListening().send().isListening()).thenReturn(isListening);
         if (netVersion != null) {
-            Mockito.when(web3j.netVersion().sendAsync()).thenReturn(supplyAsync(() -> {
+            Mockito.when(quorum.netVersion().sendAsync()).thenReturn(supplyAsync(() -> {
                 NetVersion netVersionObject = new NetVersion();
                 netVersionObject.setResult(netVersion);
                 return netVersionObject;
             }));
         }
         if (clientVersion != null) {
-            Mockito.when(web3j.web3ClientVersion().sendAsync()).thenReturn(supplyAsync(() -> {
+            Mockito.when(quorum.web3ClientVersion().sendAsync()).thenReturn(supplyAsync(() -> {
                 Web3ClientVersion web3ClientVersion = new Web3ClientVersion();
                 web3ClientVersion.setResult(clientVersion);
                 return web3ClientVersion;
             }));
         }
         if (blockNumber != null) {
-            Mockito.when(web3j.ethBlockNumber().sendAsync()).thenReturn(supplyAsync(() -> {
+            Mockito.when(quorum.ethBlockNumber().sendAsync()).thenReturn(supplyAsync(() -> {
                 EthBlockNumber ethBlockNumber = new EthBlockNumber();
                 ethBlockNumber.setResult(Numeric.encodeQuantity(blockNumber));
                 return ethBlockNumber;
             }));
         }
         if (protocolVersion != null) {
-            Mockito.when(web3j.ethProtocolVersion().sendAsync()).thenReturn(supplyAsync(() -> {
+            Mockito.when(quorum.ethProtocolVersion().sendAsync()).thenReturn(supplyAsync(() -> {
                 EthProtocolVersion ethProtocolVersion = new EthProtocolVersion();
                 ethProtocolVersion.setResult(protocolVersion);
                 return ethProtocolVersion;
             }));
         }
         if (netPeer != null) {
-            Mockito.when(web3j.netPeerCount().sendAsync()).thenReturn(supplyAsync(() -> {
+            Mockito.when(quorum.netPeerCount().sendAsync()).thenReturn(supplyAsync(() -> {
                 NetPeerCount netPeerCount = new NetPeerCount();
                 netPeerCount.setResult(Numeric.encodeQuantity(netPeer));
                 return netPeerCount;

@@ -1,20 +1,14 @@
 package org.web3j.spring.autoconfigure;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
-
 import org.web3j.protocol.Service;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.Web3jService;
@@ -22,13 +16,16 @@ import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.core.JsonRpc2_0Web3j;
 import org.web3j.protocol.http.HttpService;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-public class Web3jAutoConfigurationTest {
+public class QuorumAutoConfigurationTest {
 
     private AnnotationConfigApplicationContext context;
 
@@ -55,7 +52,7 @@ public class Web3jAutoConfigurationTest {
         Path path = Files.createTempFile("unix", "ipc");
         path.toFile().deleteOnExit();
 
-        load(EmptyConfiguration.class, "web3j.client-address=" + path.toString());
+        load(EmptyConfiguration.class, "quorum.client-address=" + path.toString());
     }
 
     @Test
@@ -66,12 +63,12 @@ public class Web3jAutoConfigurationTest {
         path.toFile().deleteOnExit();
 
         System.setProperty("os.name", "windows");
-        load(EmptyConfiguration.class, "web3j.client-address=" + path.toString());
+        load(EmptyConfiguration.class, "quorum.client-address=" + path.toString());
     }
 
     @Test
     public void testAdminClient() {
-        load(EmptyConfiguration.class, "web3j.client-address=", "web3j.admin-client=true");
+        load(EmptyConfiguration.class, "quorum.client-address=", "web3j.admin-client=true");
 
         this.context.getBean(Admin.class);
         try {
@@ -83,7 +80,7 @@ public class Web3jAutoConfigurationTest {
 
     @Test
     public void testNoAdminClient() {
-        load(EmptyConfiguration.class, "web3j.client-address=");
+        load(EmptyConfiguration.class, "quorum.client-address=");
 
         this.context.getBean(Web3j.class);
         try {
@@ -96,7 +93,7 @@ public class Web3jAutoConfigurationTest {
 
     @Test
     public void testHealthCheckIndicatorDown() {
-        load(EmptyConfiguration.class, "web3j.client-address=");
+        load(EmptyConfiguration.class, "quorum.client-address=");
 
         HealthIndicator web3jHealthIndicator = this.context.getBean(HealthIndicator.class);
         Health health = web3jHealthIndicator.health();
@@ -113,7 +110,7 @@ public class Web3jAutoConfigurationTest {
     private void verifyHttpConnection(
             String clientAddress, String expectedClientAddress, Class<? extends Service> cls)
             throws Exception {
-        load(EmptyConfiguration.class, "web3j.client-address=" + clientAddress);
+        load(EmptyConfiguration.class, "quorum.client-address=" + clientAddress);
         Web3j web3j = this.context.getBean(Web3j.class);
 
         Field web3jServiceField = JsonRpc2_0Web3j.class.getDeclaredField("web3jService");
@@ -135,9 +132,10 @@ public class Web3jAutoConfigurationTest {
 
     private void load(Class<?> config, String... environment) {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        EnvironmentTestUtils.addEnvironment(applicationContext, environment);
+        TestPropertyValues.of(environment)
+                .applyTo(applicationContext);
         applicationContext.register(config);
-        applicationContext.register(Web3jAutoConfiguration.class);
+        applicationContext.register(QuorumAutoConfiguration.class);
         applicationContext.refresh();
         this.context = applicationContext;
     }

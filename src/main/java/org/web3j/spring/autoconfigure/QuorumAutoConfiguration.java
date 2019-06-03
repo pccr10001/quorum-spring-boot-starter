@@ -1,5 +1,7 @@
 package org.web3j.spring.autoconfigure;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,44 +12,49 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.protocol.ipc.UnixIpcService;
 import org.web3j.protocol.ipc.WindowsIpcService;
-import org.web3j.spring.actuate.Web3jHealthIndicator;
+import org.web3j.quorum.JsonRpc2_0Quorum;
+import org.web3j.quorum.Quorum;
+import org.web3j.spring.actuate.QuorumHealthIndicator;
+import org.web3j.utils.Async;
 
 import java.util.concurrent.TimeUnit;
-
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 /**
  * web3j auto configuration for Spring Boot.
  */
 @Configuration
-@ConditionalOnClass(Web3j.class)
-@EnableConfigurationProperties(Web3jProperties.class)
-public class Web3jAutoConfiguration {
+@ConditionalOnClass(Quorum.class)
+@EnableConfigurationProperties(QuorumProperties.class)
+public class QuorumAutoConfiguration {
 
-    private static Log log = LogFactory.getLog(Web3jAutoConfiguration.class);
+    private static Log log = LogFactory.getLog(QuorumAutoConfiguration.class);
 
     @Autowired
-    private Web3jProperties properties;
+    private QuorumProperties properties;
 
     @Bean
     @ConditionalOnMissingBean
-    public Web3j web3j() {
+    public Quorum quorum() {
         Web3jService web3jService = buildService(properties.getClientAddress());
+
+        if (properties.getPollingInterval() != null && properties.getPollingInterval() > 0) {
+            log.info("Building service for endpoint: " + properties.getClientAddress() + " with polling interval " + properties.getPollingInterval() + " msecs");
+            return new JsonRpc2_0Quorum(web3jService, properties.getPollingInterval(), Async.defaultExecutorService());
+        }
+
         log.info("Building service for endpoint: " + properties.getClientAddress());
-        return Web3j.build(web3jService);
+        return Quorum.build(web3jService);
     }
 
     @Bean
     @ConditionalOnProperty(
-            prefix = Web3jProperties.WEB3J_PREFIX, name = "admin-client", havingValue = "true")
+            prefix = QuorumProperties.QUORUM_PREFIX, name = "admin-client", havingValue = "true")
     public Admin admin() {
         Web3jService web3jService = buildService(properties.getClientAddress());
         log.info("Building admin service for endpoint: " + properties.getClientAddress());
@@ -97,7 +104,7 @@ public class Web3jAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(Web3j.class)
-    Web3jHealthIndicator web3jHealthIndicator(Web3j web3j) {
-        return new Web3jHealthIndicator(web3j);
+    QuorumHealthIndicator quorumHealthIndicator(Quorum quorum) {
+        return new QuorumHealthIndicator(quorum);
     }
 }

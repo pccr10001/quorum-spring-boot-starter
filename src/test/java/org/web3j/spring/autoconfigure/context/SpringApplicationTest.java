@@ -4,7 +4,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.web3j.protocol.Web3j;
+import org.web3j.quorum.Quorum;
 
 import static org.mockito.Mockito.mock;
 
@@ -12,8 +12,8 @@ import static org.mockito.Mockito.mock;
 public class SpringApplicationTest {
     @Bean
     @Primary
-    public Web3j nameService() {
-        return mock(Web3j.class, Mockito.RETURNS_DEEP_STUBS);
+    public Quorum nameService() {
+        return mock(Quorum.class, Mockito.RETURNS_DEEP_STUBS);
     }
 
 }
